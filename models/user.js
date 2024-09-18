@@ -25,6 +25,14 @@ const userSchema = new Schema({
         required: [true, 'Password is required!'],
         trim: true,
         minlength: [6, 'Password must be at least 6 characters long!']
+    },
+    reset_token: {
+        type: String,
+        default: null
+    },
+    reset_token_expiration : {
+        type: Date,
+        default: null
     }
     });
 
