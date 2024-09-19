@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
-const jwt = require('../utils/jwtUtils');
+const jwt = require('../jwtUtils');
 const nodemailer  = require('nodemailer');
 const crypto = require('crypto');
 
@@ -15,7 +15,8 @@ exports.signup = async (req, res) => {
             return res.status(400).json({ error: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({ name, email, password: hashedPassword });
+        const role = await determineUserRole(email);
+        const user = new User({ name, email, password: hashedPassword, role });
         await user.save();
         const token = jwt.generateToken(user._id);
         res.status(201).json({ token });
@@ -103,3 +104,15 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+exports.googleLogin = async (req, res) => {
+    const token = jwt.generateToken(req.user._id);
+    res.status(200).json({ token });
+}
+
+async function determineUserRole(email) {
+    const adminEmails = ['admin@ecommerce.com'];
+    const role = adminEmails.includes(email) ? 'admin' : 'user';
+    return role;
+}
+
