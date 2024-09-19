@@ -25,7 +25,7 @@ const productSchema = new Schema({
     image: {
         type: String,
         required: false,
-        default: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg',
+        default: null,
         trim: true,
     }
 });

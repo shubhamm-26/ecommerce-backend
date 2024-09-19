@@ -64,8 +64,8 @@ const orderSchema = new Schema({
     },
     paymentMethod : {
         type: String,
-        enum: ['COD','Prepaid'],
-        required: true,
+        required: false,
+        default: 'Prepaid',
     },
     paymentStatus: {
         type: String,
