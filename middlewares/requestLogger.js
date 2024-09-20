@@ -1,5 +1,3 @@
-// middleware/requestLogger.js
-
 const requestLogger = (req, res, next) => {
     const start = Date.now(); 
     const originalSend = res.send;

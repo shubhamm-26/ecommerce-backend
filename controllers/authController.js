@@ -2,20 +2,13 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('../utils/jwtUtils');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 const axios = require('axios');
+const verifyRecaptcha = require('../utils/verifyRecaptcha');
+const determineUserRole = require('../utils/determineRole');
 
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
-
-async function verifyRecaptcha(token) {
-    const response = await axios.post(
-        `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`
-    );
-    console.log(response.data);
-    return response.data.success;
-}
 
 exports.signup = async (req, res) => {
     const { name, email, password, recaptchaToken } = req.body;
@@ -131,9 +124,4 @@ exports.googleLogin = async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}`);
 };
 
-async function determineUserRole(email) {
-    const adminEmails = ['admin@ecommerce.com','admin2@ecommerce.com'];
-    const role = adminEmails.includes(email) ? 'admin' : 'user';
-    return role;
-}
 
