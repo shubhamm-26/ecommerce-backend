@@ -24,14 +24,13 @@ exports.signup = async (req, res) => {
         if (!recaptchaVerified) {
             return res.status(400).json({ error: 'reCAPTCHA verification failed' });
         }
-        console.log(recaptchaVerified);
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: 'User already exists' });
         }
-
+        const role = await determineUserRole(email);
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = new User({ name, email, password: hashedPassword });
+        const user = new User({ name, email, password: hashedPassword, role });
         await user.save();
 
         const token = jwt.generateToken(user._id);
@@ -68,13 +67,15 @@ exports.login = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
+    console.log(email);
     try {
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ error: 'User not found' });
         }
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.reset_token = resetToken;
+
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        user.reset_token = otp;
         user.reset_token_expiration = Date.now() + 3600000;
         await user.save();
         const transporter = nodemailer.createTransport({
@@ -87,51 +88,51 @@ exports.forgotPassword = async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
-            subject: 'Password Reset',
-            text: `Click on the link to reset your password: http://localhost:3000/auth/reset-password/${resetToken}`
+            subject: 'Password Reset OTP',
+            text: `Your OTP for password reset is: ${otp}. It is valid for 1 hour.`
         };
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 return res.status(500).json({ error: error.message });
             }
-            res.status(200).json({ message: 'Email sent' });
+            res.status(200).json({ message: 'OTP sent to your email' });
         });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 exports.resetPassword = async (req, res) => {
-    const { password } = req.body;
-    const resetToken = req.params.resetToken;
+    const {email, otp, password } = req.body;
     try {
-        const user = await User.findOne({ reset_token: resetToken });
+        const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ error: 'Invalid token' });
+            return res.status(400).json({ error: 'Invalid OTP' });
         }
         if (user.reset_token_expiration < Date.now()) {
-            return res.status(400).json({ error: 'Token expired' });
+            return res.status(400).json({ error: 'OTP expired' });
+        }
+        if (user.reset_token !== otp) {
+            return res.status(400).json({ error: 'Invalid OTP' });
         }
         const hashedPassword = await bcrypt.hash(password, 12);
         user.password = hashedPassword;
-        user.reset_token = null;
+        user.reset_token= null;
         user.reset_token_expiration = null;
-        await user.save();
+        await user.save();   
         res.status(200).json({ message: 'Password reset successfully' });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};
 
 exports.googleLogin = async (req, res) => {
     const token = jwt.generateToken(req.user._id);
     res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}`);
-}
+};
 
 async function determineUserRole(email) {
-    const adminEmails = ['admin@ecommerce.com'];
+    const adminEmails = ['admin@ecommerce.com','admin2@ecommerce.com'];
     const role = adminEmails.includes(email) ? 'admin' : 'user';
     return role;
 }

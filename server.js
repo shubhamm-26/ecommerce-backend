@@ -4,8 +4,10 @@ const passport = require('./middlewares/passport')
 const session = require('express-session');
 require("./utils/db");
 const cors = require('cors');
+const requestLogger = require('./middlewares/requestLogger');
 
 const app = express();
+app.use(requestLogger);
 
 app.use(session({
     secret: process.env.SECRET_KEY,

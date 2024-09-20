@@ -4,7 +4,7 @@ const Order = require('../models/order');
 exports.getAllOrders = async (req, res) => {
     try{
         const UserId = req.userId;
-        const orders = await Order.find({user: UserId});
+        const orders = await Order.find({user: UserId}).populate('items.productId', 'name price');
         res.status(200).json(orders);
     }
     catch(error){
@@ -15,7 +15,7 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrderById = async (req, res) => {
     const {id} = req.params;
     try{
-        const order = await Order.findById(id);
+        const order = await Order.findById(id).populate('items.productId', 'name price');
         if(!order){
             return res.status(404).json({error: 'Order not found'});
         }
