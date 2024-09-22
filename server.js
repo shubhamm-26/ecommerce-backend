@@ -19,6 +19,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(cors());
 app.use(express.json());
+app.options('*', cors());
 
 app.use('/auth', require('./routes/authRoutes'));
 app.use('/products', require('./routes/productRoutes'));
