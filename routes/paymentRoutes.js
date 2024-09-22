@@ -20,13 +20,11 @@ router.post('/create-order', async (req, res) => {
 
 router.post('/complete-payment', async (req, res) => {
   try {
-    res.setHeader('Access-Control-Allow-Origin', '*');
     const { data, orderId } = req.body;
     const order = await Order.findById(orderId).populate('items.productId', 'name price');
     if (!order) {
       return res.status(404).send('Order not found');
     }
-
     order.paymentStatus = 'completed';
     order.status = 'delivered';
     order.paymentMethod = 'paypal';
