@@ -27,7 +27,7 @@ exports.signup = async (req, res) => {
         await user.save();
 
         const token = jwt.generateToken(user._id);
-        res.status(201).json({ user,token });
+        res.status(201).json({ role,token });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -50,9 +50,9 @@ exports.login = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid email or password' });
         }
-
+        const role = user.role;
         const token = jwt.generateToken(user._id);
-        res.status(200).json({user, token });
+        res.status(200).json({role, token });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -121,7 +121,8 @@ exports.resetPassword = async (req, res) => {
 
 exports.googleLogin = async (req, res) => {
     const token = jwt.generateToken(req.user._id);
-    res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}`);
+    const role = await determineUserRole(req.user.email);
+    res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}?role=${role}`);
 };
 
 
