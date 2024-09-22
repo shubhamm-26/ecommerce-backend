@@ -3,7 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 const createInvoicePDF = (order, userEmail) => {
-  const pdfPath = path.join(__dirname, `../invoices/${order._id}.pdf`);
+  const invoicesDir = path.join(__dirname, '../invoices');
+
+  if (!fs.existsSync(invoicesDir)) {
+    fs.mkdirSync(invoicesDir, { recursive: true });
+  }
+
+  const pdfPath = path.join(invoicesDir, `${order._id}.pdf`);
   const doc = new PDFDocument({ margin: 50 });
   const invoiceStream = fs.createWriteStream(pdfPath);
 
@@ -35,7 +41,6 @@ const createInvoicePDF = (order, userEmail) => {
     .lineTo(550, tableTop + 20)
     .stroke();
 
-
   let itemPosition = tableTop + 30;
   order.items.forEach((item) => {
     const price = item.productId.price || 0;
@@ -61,7 +66,6 @@ const createInvoicePDF = (order, userEmail) => {
   doc.fontSize(10).text('Thank you for shopping with us!', 50, subtotalPosition + 100, { align: 'center' });
 
   doc.end();
-
 
   return pdfPath;
 };
