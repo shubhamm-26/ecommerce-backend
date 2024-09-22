@@ -122,7 +122,8 @@ exports.resetPassword = async (req, res) => {
 exports.googleLogin = async (req, res) => {
     const token = jwt.generateToken(req.user._id);
     const role = await determineUserRole(req.user.email);
-    res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}?role=${role}`);
+    res.redirect(`${process.env.FRONTEND_URL}/google?token=${token}&role=${role}`);
 };
+
 
 
